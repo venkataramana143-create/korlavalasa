@@ -1,0 +1,14 @@
+{
+  "builds": [
+    {
+      "src": "Korlavalasa.csproj",
+      "use": "@vercel/dotnet"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
