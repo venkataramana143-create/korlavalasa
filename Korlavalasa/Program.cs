@@ -99,7 +99,7 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 
-// Database Initialization and Seeding - NUCLEAR OPTION
+// Database Initialization and Seeding - WITH DETAILED ERROR HANDLING
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -111,24 +111,24 @@ using (var scope = app.Services.CreateScope())
 
         Console.WriteLine("🚀 STARTING DATABASE INITIALIZATION...");
 
-        // Nuclear option: Delete and recreate database
-        Console.WriteLine("🔧 Dropping existing database...");
-        await context.Database.EnsureDeletedAsync();
-        Console.WriteLine("✅ Database dropped");
+        // Test database connection first
+        Console.WriteLine("🔧 Testing database connection...");
+        var canConnect = await context.Database.CanConnectAsync();
+        Console.WriteLine($"✅ Database connection: {canConnect}");
 
-        Console.WriteLine("🔧 Creating new database tables...");
-        var created = await context.Database.EnsureCreatedAsync();
-        Console.WriteLine($"✅ Database tables created: {created}");
+        if (canConnect)
+        {
+            // Use EnsureCreated instead of Migrate for PostgreSQL
+            Console.WriteLine("🔧 Creating database tables...");
+            var created = await context.Database.EnsureCreatedAsync();
+            Console.WriteLine($"✅ Database tables created: {created}");
 
-        if (created)
-        {
-            Console.WriteLine("🔧 Seeding initial data...");
-            await SeedInitialData(context, userManager, roleManager);
-            Console.WriteLine("✅ Data seeded successfully");
-        }
-        else
-        {
-            Console.WriteLine("❌ Database tables were not created");
+            if (created)
+            {
+                Console.WriteLine("🔧 Seeding initial data...");
+                await SeedInitialDataWithRetry(context, userManager, roleManager);
+                Console.WriteLine("✅ Data seeded successfully");
+            }
         }
 
         Console.WriteLine("🎉 DATABASE INITIALIZATION COMPLETED SUCCESSFULLY");
@@ -136,214 +136,203 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         Console.WriteLine($"💥 CRITICAL DATABASE ERROR: {ex.Message}");
+        Console.WriteLine($"💥 ERROR TYPE: {ex.GetType().FullName}");
+
+        if (ex.InnerException != null)
+        {
+            Console.WriteLine($"💥 INNER EXCEPTION: {ex.InnerException.Message}");
+            Console.WriteLine($"💥 INNER EXCEPTION TYPE: {ex.InnerException.GetType().FullName}");
+        }
+
         Console.WriteLine($"💥 STACK TRACE: {ex.StackTrace}");
 
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "A critical error occurred while initializing the database.");
-
-        // Don't crash the app, but log everything
-        if (ex.InnerException != null)
-        {
-            Console.WriteLine($"💥 INNER EXCEPTION: {ex.InnerException.Message}");
-        }
     }
 }
 
 app.Run();
 
-// Seed Initial Data Method
-async Task SeedInitialData(AppDbContext context, UserManager<AdminUser> userManager, RoleManager<IdentityRole> roleManager)
+// Seed Initial Data Method with Individual Entity Handling
+async Task SeedInitialDataWithRetry(AppDbContext context, UserManager<AdminUser> userManager, RoleManager<IdentityRole> roleManager)
+{
+    Console.WriteLine("🔧 Starting data seeding with individual entity handling...");
+
+    // 1. Seed Admin Role
+    await SeedAdminRole(roleManager);
+
+    // 2. Seed Admin User
+    await SeedAdminUser(userManager);
+
+    // 3. Seed VillageInfo
+    await SeedVillageInfo(context);
+
+    // 4. Seed News
+    await SeedNews(context);
+
+    // 5. Seed Events
+    await SeedEvents(context);
+
+    Console.WriteLine("🎉 All data seeded successfully");
+}
+
+async Task SeedAdminRole(RoleManager<IdentityRole> roleManager)
 {
     try
     {
-        Console.WriteLine("🔧 Starting data seeding...");
-
-        // Create Admin Role if it doesn't exist
-        Console.WriteLine("🔧 Creating admin role...");
+        Console.WriteLine("🔧 Seeding admin role...");
         if (!await roleManager.RoleExistsAsync("Admin"))
         {
-            var roleResult = await roleManager.CreateAsync(new IdentityRole("Admin"));
-            if (roleResult.Succeeded)
-            {
+            var result = await roleManager.CreateAsync(new IdentityRole("Admin"));
+            if (result.Succeeded)
                 Console.WriteLine("✅ Admin role created");
-            }
             else
-            {
-                Console.WriteLine($"❌ Failed to create admin role: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
-            }
+                Console.WriteLine($"❌ Failed to create admin role: {string.Join(", ", result.Errors.Select(e => e.Description))}");
         }
         else
         {
             Console.WriteLine("✅ Admin role already exists");
         }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ ERROR seeding admin role: {ex.Message}");
+    }
+}
 
-        // Create Admin User if it doesn't exist
-        Console.WriteLine("🔧 Creating admin user...");
+async Task SeedAdminUser(UserManager<AdminUser> userManager)
+{
+    try
+    {
+        Console.WriteLine("🔧 Seeding admin user...");
         string adminEmail = "admin@korlavalasa.com";
-        string adminUsername = "admin";
-        string adminPassword = "Admin@123";
-        string adminFullName = "Korlavalasa Administrator";
 
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
         if (adminUser == null)
         {
             adminUser = new AdminUser
             {
-                UserName = adminUsername,
+                UserName = "admin",
                 Email = adminEmail,
-                FullName = adminFullName,
+                FullName = "Korlavalasa Administrator",
                 EmailConfirmed = true
             };
 
-            var userResult = await userManager.CreateAsync(adminUser, adminPassword);
-            if (userResult.Succeeded)
+            var result = await userManager.CreateAsync(adminUser, "Admin@123");
+            if (result.Succeeded)
             {
+                await userManager.AddToRoleAsync(adminUser, "Admin");
                 Console.WriteLine("✅ Admin user created successfully");
-
-                // Add to admin role
-                var roleAddResult = await userManager.AddToRoleAsync(adminUser, "Admin");
-                if (roleAddResult.Succeeded)
-                {
-                    Console.WriteLine("✅ Admin user added to Admin role");
-                }
-                else
-                {
-                    Console.WriteLine($"❌ Failed to add admin user to role: {string.Join(", ", roleAddResult.Errors.Select(e => e.Description))}");
-                }
             }
             else
             {
-                var errors = string.Join(", ", userResult.Errors.Select(e => e.Description));
-                Console.WriteLine($"❌ Failed to create admin user: {errors}");
+                Console.WriteLine($"❌ Failed to create admin user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
             }
         }
         else
         {
             Console.WriteLine("✅ Admin user already exists");
         }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ ERROR seeding admin user: {ex.Message}");
+    }
+}
 
-        // Seed Village Info if it doesn't exist
-        Console.WriteLine("🔧 Seeding village information...");
+async Task SeedVillageInfo(AppDbContext context)
+{
+    try
+    {
+        Console.WriteLine("🔧 Seeding village info...");
         if (!context.VillageInfo.Any())
         {
-            try
+            var villageInfo = new VillageInfo
             {
-                var villageInfo = new VillageInfo
-                {
-                    AboutText = "Welcome to Korlavalasa, a beautiful village in Andhra Pradesh known for its rich cultural heritage and ancient temples. Our village represents the perfect blend of traditional values and modern development.",
-                    History = "Korlavalasa has a glorious history spanning over two centuries. Established by our ancestors who were primarily involved in agriculture, the village has preserved ancient traditions while progressing with time.",
-                    Population = 3250,
-                    Area = 18.5m,
-                    MainCrops = "Paddy, Sugarcane, Cotton, Groundnut, Vegetables",
-                    ContactEmail = "contact@korlavalasa.com",
-                    ContactNumber = "+91-9876543210",
-                    Address = "Korlavalasa Village, Vizianagaram District, Andhra Pradesh - 535002, India",
-                    SarpanchName = "Sri Venkata Ramana",
-                    SecretaryName = "Sri Srinivasa Rao"
-                };
+                AboutText = "Welcome to Korlavalasa village official website.",
+                History = "Korlavalasa has a rich history and cultural heritage.",
+                Population = 2500,
+                Area = 15.75m,
+                MainCrops = "Rice, Vegetables, Fruits",
+                ContactEmail = "info@korlavalasa.com",
+                ContactNumber = "+91XXXXXXXXXX",
+                Address = "Korlavalasa Village",
+                SarpanchName = "Sarpanch Name",
+                SecretaryName = "Secretary Name"
+            };
 
-                context.VillageInfo.Add(villageInfo);
-                await context.SaveChangesAsync();
-                Console.WriteLine("✅ Village information seeded successfully");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Error seeding village info: {ex.Message}");
-            }
+            context.VillageInfo.Add(villageInfo);
+            await context.SaveChangesAsync();
+            Console.WriteLine("✅ Village information seeded successfully");
         }
         else
         {
             Console.WriteLine("✅ Village information already exists");
         }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ ERROR seeding village info: {ex.Message}");
+        Console.WriteLine($"❌ VILLAGE INFO ERROR DETAILS: {ex}");
+    }
+}
 
-        // Seed Sample News if none exist
+async Task SeedNews(AppDbContext context)
+{
+    try
+    {
         Console.WriteLine("🔧 Seeding news...");
         if (!context.News.Any())
         {
-            try
+            var news = new News
             {
-                var newsItems = new List<News>
-                {
-                    new News
-                    {
-                        Title = "Welcome to Korlavalasa Official Website",
-                        Content = "We are excited to launch the official website of Korlavalasa village. This digital platform will help us stay connected and share important updates with all villagers.",
-                        PublishedDate = DateTime.Now.AddDays(-1),
-                        IsActive = true
-                    },
-                    new News
-                    {
-                        Title = "Annual Village Festival",
-                        Content = "The annual village festival will be celebrated next month. All villagers are invited to participate in the cultural programs and traditional rituals.",
-                        PublishedDate = DateTime.Now.AddDays(-3),
-                        IsActive = true
-                    }
-                };
+                Title = "Welcome to Korlavalasa",
+                Content = "Welcome to our village website!",
+                PublishedDate = DateTime.Now,
+                IsActive = true
+            };
 
-                context.News.AddRange(newsItems);
-                await context.SaveChangesAsync();
-                Console.WriteLine("✅ Sample news items seeded successfully");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Error seeding news: {ex.Message}");
-            }
+            context.News.Add(news);
+            await context.SaveChangesAsync();
+            Console.WriteLine("✅ News seeded successfully");
         }
         else
         {
             Console.WriteLine("✅ News already exists");
         }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ ERROR seeding news: {ex.Message}");
+    }
+}
 
-        // Seed Sample Events if none exist
+async Task SeedEvents(AppDbContext context)
+{
+    try
+    {
         Console.WriteLine("🔧 Seeding events...");
         if (!context.Events.Any())
         {
-            try
+            var eventItem = new Event
             {
-                var events = new List<Event>
-                {
-                    new Event
-                    {
-                        Title = "Monthly Gram Sabha Meeting",
-                        Description = "Regular village council meeting to discuss development works and community issues.",
-                        EventDate = DateTime.Now.AddDays(7),
-                        Location = "Village Panchayat Office",
-                        ContactPerson = "Sarpanch Office",
-                        ContactNumber = "+91-9876543210"
-                    },
-                    new Event
-                    {
-                        Title = "Village Temple Festival",
-                        Description = "Annual celebration at the village temple with cultural programs and traditional rituals.",
-                        EventDate = DateTime.Now.AddDays(15),
-                        Location = "Sri Lakshmi Narasimha Temple",
-                        ContactPerson = "Temple Committee",
-                        ContactNumber = "+91-9876543211"
-                    }
-                };
+                Title = "Village Meeting",
+                Description = "Monthly village meeting",
+                EventDate = DateTime.Now.AddDays(7),
+                Location = "Village Hall"
+            };
 
-                context.Events.AddRange(events);
-                await context.SaveChangesAsync();
-                Console.WriteLine("✅ Sample events seeded successfully");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Error seeding events: {ex.Message}");
-            }
+            context.Events.Add(eventItem);
+            await context.SaveChangesAsync();
+            Console.WriteLine("✅ Events seeded successfully");
         }
         else
         {
             Console.WriteLine("✅ Events already exist");
         }
-
-        Console.WriteLine("🎉 Data seeding completed successfully");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"💥 CRITICAL ERROR in data seeding: {ex.Message}");
-        Console.WriteLine($"💥 STACK TRACE: {ex.StackTrace}");
-        throw; // Re-throw to see the exact error in logs
+        Console.WriteLine($"❌ ERROR seeding events: {ex.Message}");
     }
-
-   
 }
