@@ -29,9 +29,21 @@ builder.Services.Configure<FormOptions>(options =>
     options.MemoryBufferThreshold = int.MaxValue;
 });
 
-// Database Configuration - Use SQL Server for all environments
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// DATABASE CONFIGURATION - UPDATED FOR PRODUCTION
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (builder.Environment.IsDevelopment())
+{
+    // Local Development - SQL Server
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlServer(connectionString));
+}
+else
+{
+    // Production - PostgreSQL (Render)
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
 
 // Identity Configuration
 builder.Services.AddIdentity<AdminUser, IdentityRole>(options =>
@@ -118,12 +130,13 @@ async Task SeedInitialData(AppDbContext context, UserManager<AdminUser> userMana
     if (!await roleManager.RoleExistsAsync("Admin"))
     {
         await roleManager.CreateAsync(new IdentityRole("Admin"));
+        Console.WriteLine("✅ Admin role created");
     }
 
     // Create Admin User if it doesn't exist
     string adminEmail = "admin@korlavalasa.com";
     string adminUsername = "admin";
-    string adminPassword = "admin@123";
+    string adminPassword = "Admin@123";
     string adminFullName = "Korlavalasa Administrator";
 
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
@@ -150,5 +163,5 @@ async Task SeedInitialData(AppDbContext context, UserManager<AdminUser> userMana
         }
     }
 
- 
+   
 }

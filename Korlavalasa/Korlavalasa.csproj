@@ -5,17 +5,14 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>48fe229a-f16c-4724-a346-cf977d8b3035</UserSecretsId>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <!-- REMOVE OR COMMENT THESE LINES FOR LOCAL DEVELOPMENT -->
-    <!-- <PublishSingleFile>true</PublishSingleFile> -->
-    <!-- <SelfContained>true</SelfContained> -->
-    <!-- <RuntimeIdentifier>linux-x64</RuntimeIdentifier> -->
+    <!-- REMOVED: DockerDefaultTargetOS -->
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.4" />
+    <!-- ADD POSTGRESQL -->
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -24,7 +21,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
+    <!-- REMOVED: Microsoft.VisualStudio.Azure.Containers.Tools.Targets -->
   </ItemGroup>
 
 </Project>
