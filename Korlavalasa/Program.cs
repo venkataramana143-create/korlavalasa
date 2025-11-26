@@ -98,6 +98,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapRazorPages();
 
+ 
 // Database Initialization and Seeding
 using (var scope = app.Services.CreateScope())
 {
@@ -108,14 +109,23 @@ using (var scope = app.Services.CreateScope())
         var userManager = services.GetRequiredService<UserManager<AdminUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-        // Apply migrations and ensure database is created
-        context.Database.Migrate();
+        Console.WriteLine("🔧 Starting database initialization...");
+
+        // Use EnsureCreated instead of Migrate for PostgreSQL
+        Console.WriteLine("🔧 Creating database tables...");
+        var created = await context.Database.EnsureCreatedAsync();
+        Console.WriteLine($"✅ Database tables created: {created}");
 
         // Seed initial data
+        Console.WriteLine("🔧 Seeding initial data...");
         await SeedInitialData(context, userManager, roleManager);
+        Console.WriteLine("✅ Database initialization completed successfully");
     }
     catch (Exception ex)
     {
+        Console.WriteLine($"❌ DATABASE INITIALIZATION ERROR: {ex.Message}");
+        Console.WriteLine($"❌ FULL ERROR: {ex}");
+
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An error occurred while initializing the database.");
     }
