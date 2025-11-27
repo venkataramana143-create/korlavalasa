@@ -24,17 +24,17 @@ namespace Korlavalasa.Pages
             // Village Info
             VillageInfo = await _context.VillageInfo.FirstOrDefaultAsync() ?? new VillageInfo();
 
-            // FIX: Convert PublishedDate to UTC to match Postgres timestamp with time zone
+            // NEWS - FIXED (remove ToUniversalTime)
             NewsItems = await _context.News
                 .Where(n => n.IsActive)
-                .OrderByDescending(n => n.PublishedDate.ToUniversalTime())
+                .OrderByDescending(n => n.PublishedDate)
                 .Take(3)
                 .ToListAsync();
 
-            // FIX: Convert EventDate also to UTC for comparison
+            // EVENTS - FIXED (DateTimeOffset comparison)
             UpcomingEvents = await _context.Events
-                .Where(e => e.EventDate.ToUniversalTime() >= DateTime.UtcNow.Date)
-                .OrderBy(e => e.EventDate.ToUniversalTime())
+                .Where(e => e.EventDate >= DateTimeOffset.UtcNow.Date)
+                .OrderBy(e => e.EventDate)
                 .Take(4)
                 .ToListAsync();
         }
