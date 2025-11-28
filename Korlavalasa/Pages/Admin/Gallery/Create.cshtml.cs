@@ -262,29 +262,14 @@ namespace Korlavalasa.Pages.Admin.Gallery
                     {
                         _logger.LogError(dbEx, "Database error while saving images");
 
-                        // Clean up uploaded files since database save failed
-                        foreach (var image in uploadedImages)
-                        {
-                            if (!string.IsNullOrEmpty(image.ImagePath))
-                            {
-                                var physicalPath = Path.Combine(_environment.WebRootPath, image.ImagePath.TrimStart('/'));
-                                if (System.IO.File.Exists(physicalPath))
-                                {
-                                    try
-                                    {
-                                        System.IO.File.Delete(physicalPath);
-                                    }
-                                    catch (Exception cleanupEx)
-                                    {
-                                        _logger.LogError(cleanupEx, $"Failed to clean up file: {physicalPath}");
-                                    }
-                                }
-                            }
-                        }
+                        var realError =
+                            dbEx.InnerException?.Message       // actual PostgreSQL error
+                            ?? dbEx.Message;                   // fallback
 
-                        ViewData["Error"] = "Database error occurred while saving the images. Please try again.";
+                        ViewData["Error"] = realError;
                         return Page();
                     }
+
                 }
                 else
                 {
