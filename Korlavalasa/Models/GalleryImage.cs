@@ -15,7 +15,8 @@ namespace Korlavalasa.Models
         public string ImagePath { get; set; } = string.Empty;
 
         [Display(Name = "Upload Date")]
-        public DateTime UploadDate { get; set; } = DateTime.Now;
+       public DateTime UploadDate { get; set; } = DateTime.UtcNow;
+
 
         [Required(ErrorMessage = "Category is required")]
         public string Category { get; set; } = "General";
