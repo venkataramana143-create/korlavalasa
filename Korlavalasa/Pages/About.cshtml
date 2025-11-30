@@ -24,7 +24,7 @@
             <!-- Village Overview -->
             <div class="card">
                 <div class="card-body">
-                    <h2 class="section-title">Welcome to Korlavalasa</h2>
+                    <h2 class="section-title">కోర్లవలసకు స్వాగతం</h2>
                     <p class="lead-text">@Model.VillageInfo.AboutText</p>
                 </div>
             </div>
@@ -33,7 +33,7 @@
             <div class="card">
                 <div class="card-body">
                     <h3 class="section-title">
-                        <i class="fas fa-history me-2"></i>Our Rich History
+                        <i class="fas fa-history me-2"></i>మా గొప్ప చరిత్ర
                     </h3>
                     <p class="card-text fs-6">@Model.VillageInfo.History</p>
 
@@ -42,15 +42,15 @@
                             <div class="col-md-6 mb-3">
                                 <div class="feature-item">
                                     <i class="fas fa-landmark"></i>
-                                    <h5 class="fw-bold">Historical Significance</h5>
-                                    <p class="text-muted mb-0">Korlavalasa has been a center of agricultural excellence for generations, preserving traditional farming methods while adopting modern techniques.</p>
+                                    <h5 class="fw-bold">చారిత్రక ప్రాముఖ్యత</h5>
+                                    <p class="text-muted mb-0">కోర్లవలస తరతరాలుగా వ్యవసాయ శ్రేష్ఠతకు కేంద్రంగా ఉంది, ఆధునిక పద్ధతులను అవలంబిస్తూ సంప్రదాయ వ్యవసాయ పద్ధతులను కాపాడుకుంటుంది.</p>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <div class="feature-item">
                                     <i class="fas fa-people-arrows"></i>
-                                    <h5 class="fw-bold">Cultural Heritage</h5>
-                                    <p class="text-muted mb-0">Our village maintains ancient traditions, festivals, and community practices that have been passed down through centuries.</p>
+                                    <h5 class="fw-bold">సాంస్కృతిక వారసత్వం</h5>
+                                    <p class="text-muted mb-0">మా గ్రామం ప్రాచీన సంప్రదాయాలు, పండుగలు మరియు సామాజిక ఆచారాలను కాపాడుకుంటుంది, ఇవి శతాబ్దాలుగా తరతరాలుగా అందించబడ్డాయి.</p>
                                 </div>
                             </div>
                         </div>
@@ -62,23 +62,23 @@
             <div class="card">
                 <div class="card-body">
                     <h3 class="section-title">
-                        <i class="fas fa-users me-2"></i>Village Leadership
+                        <i class="fas fa-users me-2"></i>గ్రామ నాయకత్వం
                     </h3>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="leadership-card">
                                 <i class="fas fa-user-tie"></i>
-                                <h5 class="fw-bold mb-2">Sarpanch</h5>
+                                <h5 class="fw-bold mb-2">సర్పంచ్</h5>
                                 <p class="fs-5 fw-bold text-success mb-1">@Model.VillageInfo.SarpanchName</p>
-                                <p class="text-muted mb-0">Village Head Representative</p>
+                                <p class="text-muted mb-0">గ్రామ ప్రధాన ప్రతినిధి</p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="leadership-card">
                                 <i class="fas fa-user-shield"></i>
-                                <h5 class="fw-bold mb-2">Village Secretary</h5>
+                                <p class="text-muted mb-0">గ్రామ సెక్రటరీ</p>
                                 <p class="fs-5 fw-bold text-success mb-1">@Model.VillageInfo.SecretaryName</p>
-                                <p class="text-muted mb-0">Administrative Officer</p>
+                                <p class="text-muted mb-0">గ్రామపంచాయితీ సెక్రటరీ</p>
                             </div>
                         </div>
                     </div>
@@ -92,23 +92,23 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="section-title mb-3">
-                        <i class="fas fa-chart-bar me-2"></i>Village Statistics
+                        <i class="fas fa-chart-bar me-2"></i>గ్రామ గణాంకాలు
                     </h5>
                     <div class="stats-list">
                         <div class="stat-item">
-                            <span>Population</span>
+                            <span>జనాభా</span>
                             <span class="stat-badge">@Model.VillageInfo.Population</span>
                         </div>
                         <div class="stat-item">
-                            <span>Area</span>
-                            <span class="stat-badge">@Model.VillageInfo.Area sq km</span>
+                            <span>విస్తీర్ణం</span>
+                            <span class="stat-badge">@Model.VillageInfo.Area చ.కి.మీ</span>
                         </div>
                         <div class="stat-item">
-                            <span>Households</span>
+                            <span>కుటుంబాలు</span>
                             <span class="stat-badge">~850</span>
                         </div>
                         <div class="stat-item">
-                            <span>Literacy Rate</span>
+                            <span>సాక్షరత</span>
                             <span class="stat-badge">72%</span>
                         </div>
                     </div>
@@ -119,13 +119,13 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="section-title mb-3">
-                        <i class="fas fa-seedling me-2"></i>Agricultural Profile
+                        <i class="fas fa-seedling me-2"></i>వ్యవసాయ ప్రొఫైల్
                     </h5>
-                    <p class="fw-bold mb-3">Main Crops: <span class="text-success">@Model.VillageInfo.MainCrops</span></p>
+                    <p class="fw-bold mb-3">ప్రధాన పంటలు: <span class="text-success">@Model.VillageInfo.MainCrops</span></p>
 
                     <div class="crop-progress">
                         <div class="d-flex justify-content-between mb-1">
-                            <small>Paddy</small>
+                            <small>వరి</small>
                             <small class="fw-bold">60%</small>
                         </div>
                         <div class="progress mb-3">
@@ -133,7 +133,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between mb-1">
-                            <small>Sweet Corn</small>
+                            <small>స్వీట్ కార్న్</small>
                             <small class="fw-bold">25%</small>
                         </div>
                         <div class="progress mb-3">
@@ -141,7 +141,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between mb-1">
-                            <small>Other Crops</small>
+                            <small>ఇతర పంటలు</small>
                             <small class="fw-bold">15%</small>
                         </div>
                         <div class="progress">
@@ -155,14 +155,14 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="section-title mb-3">
-                        <i class="fas fa-map me-2"></i>Location
+                        <i class="fas fa-map me-2"></i>స్థానం
                     </h5>
                     <div class="map-placeholder">
                         <i class="fas fa-map-marked-alt"></i>
-                        <p class="fw-bold mb-1">Korlavalasa Village</p>
+                        <p class="fw-bold mb-1">కోర్లవలస గ్రామం</p>
                         <small class="text-muted">
-                            Vizianagaram District<br>
-                            Andhra Pradesh - 532127
+                            విజయనగరం జిల్లా<br>
+                            ఆంధ్ర ప్రదేశ్ - 532127
                         </small>
                     </div>
                 </div>
@@ -175,34 +175,20 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <h3 class="section-title text-center mb-4">What Makes Korlavalasa Special</h3>
+                    <h3 class="section-title text-center mb-4">కోర్లవలసను ప్రత్యేకమైనదిగా చేస్తున్నవి</h3>
                     <div class="row">
-                        <div class="col-md-3 col-6">
+                        <div class="col-md-6 col-6">
                             <div class="feature-item">
                                 <i class="fas fa-temple"></i>
-                                <h6 class="fw-bold">Ancient Temples</h6>
-                                <p class="text-muted mb-0 small">8 historical temples with unique architecture</p>
+                                <h6 class="fw-bold">ప్రాచీన దేవాలయాలు</h6>
+                                <p class="text-muted mb-0 small">అనన్యమైన నిర్మాణ శైలితో 8 చారిత్రక దేవాలయాలు</p>
                             </div>
                         </div>
-                        <div class="col-md-3 col-6">
+                        <div class="col-md-6 col-6">
                             <div class="feature-item">
                                 <i class="fas fa-water"></i>
-                                <h6 class="fw-bold">Water Resources</h6>
-                                <p class="text-muted mb-0 small">Abundant natural water sources for irrigation</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <div class="feature-item">
-                                <i class="fas fa-school"></i>
-                                <h6 class="fw-bold">Education</h6>
-                                <p class="text-muted mb-0 small">5 educational institutions serving the community</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <div class="feature-item">
-                                <i class="fas fa-heart"></i>
-                                <h6 class="fw-bold">Community Spirit</h6>
-                                <p class="text-muted mb-0 small">Strong social bonds and cultural unity</p>
+                                <h6 class="fw-bold">నీటి వనరులు</h6>
+                                <p class="text-muted mb-0 small">నీటిపారుదల కోసం సమృద్ధిగా సహజ నీటి వనరులు</p>
                             </div>
                         </div>
                     </div>

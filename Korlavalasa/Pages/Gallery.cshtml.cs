@@ -12,7 +12,7 @@ namespace Korlavalasa.Pages
         public List<GalleryImage> GalleryImages { get; set; } = new List<GalleryImage>();
 
         [BindProperty(SupportsGet = true)]
-        public string Category { get; set; } = "All";
+        public string Category { get; set; } = "Temple"; // Changed from "All" to "Temple"
 
         public GalleryModel(AppDbContext context)
         {
@@ -22,6 +22,12 @@ namespace Korlavalasa.Pages
         public async Task OnGetAsync()
         {
             var query = _context.Gallery.AsQueryable();
+
+            // If no category is specified in URL, use default "Temple"
+            if (string.IsNullOrEmpty(Request.Query["category"]))
+            {
+                Category = "Temple";
+            }
 
             if (Category != "All")
             {

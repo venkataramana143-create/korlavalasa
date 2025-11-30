@@ -24,7 +24,7 @@
             </h5>
             <div class="filter-buttons">
                 <a href="?category=All" class="filter-btn @(Model.Category == "All" ? "active" : "")">All</a>
-                <a href="?category=Temple" class="filter-btn @(Model.Category == "Temple" ? "active" : "")">🏛️ Temples</a>
+                <a href="?category=Temple" class="filter-btn @(Model.Category == "Temple" || string.IsNullOrEmpty(Request.Query["category"]) ? "active" : "")">🏛️ Temples</a>
                 <a href="?category=Festival" class="filter-btn @(Model.Category == "Festival" ? "active" : "")">🎉 Festivals</a>
                 <a href="?category=Agriculture" class="filter-btn @(Model.Category == "Agriculture" ? "active" : "")">🌾 Agriculture</a>
                 <a href="?category=Development" class="filter-btn @(Model.Category == "Development" ? "active" : "")">🏗️ Development</a>

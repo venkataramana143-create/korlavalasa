@@ -151,14 +151,26 @@ async Task EnsureAdminUserAlwaysExists(
     UserManager<AdminUser> userManager,
     RoleManager<IdentityRole> roleManager)
 {
-    string adminEmail = "admin@korlavalasa.com";
-    string adminUsername = "admin";
+    string adminEmail = "kvuser@korlavalasa.com";
+    string adminUsername = "kvuser";
+    string adminPassword = "kvalasa@123";
 
-    // Create role if missing
+    // Ensure Admin role exists
     if (!await roleManager.RoleExistsAsync("Admin"))
+    {
         await roleManager.CreateAsync(new IdentityRole("Admin"));
+        Console.WriteLine("✔ Admin role created");
+    }
 
-    // Create admin user if missing
+    // Delete old admin user (optional)
+    var oldAdmin = await userManager.FindByNameAsync("admin");
+    if (oldAdmin != null)
+    {
+        await userManager.DeleteAsync(oldAdmin);
+        Console.WriteLine("✔ Old admin user removed");
+    }
+
+    // Check if new user exists
     var admin = await userManager.FindByEmailAsync(adminEmail);
 
     if (admin == null)
@@ -171,16 +183,22 @@ async Task EnsureAdminUserAlwaysExists(
             EmailConfirmed = true
         };
 
-        var result = await userManager.CreateAsync(admin, "Admin@123");
+        var result = await userManager.CreateAsync(admin, adminPassword);
 
         if (result.Succeeded)
+        {
             await userManager.AddToRoleAsync(admin, "Admin");
+            Console.WriteLine("✔ New Admin created: kvuser");
+        }
         else
-            Console.WriteLine("❌ Error creating admin: " +
+        {
+            Console.WriteLine("❌ Failed to create new admin: " +
                 string.Join(", ", result.Errors.Select(e => e.Description)));
+        }
     }
     else
     {
-        Console.WriteLine("✔ Admin user already exists");
+        Console.WriteLine("✔ Admin user already exists: kvuser");
     }
 }
+
