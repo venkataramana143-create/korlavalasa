@@ -18,12 +18,14 @@ builder.Services.AddRazorPages();
 // ----------------------------------------
 builder.Services.Configure<IISServerOptions>(options =>
 {
-    options.MaxRequestBodySize = 50 * 1024 * 1024;
+    options.MaxRequestBodySize = 50 * 1024 * 1024; // 50 MB
 });
+
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
     options.Limits.MaxRequestBodySize = 50 * 1024 * 1024;
 });
+
 builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = 50 * 1024 * 1024;
@@ -32,32 +34,22 @@ builder.Services.Configure<FormOptions>(options =>
     options.MemoryBufferThreshold = int.MaxValue;
 });
 
+// ----------------------------------------
+// Cloudinary (Image Storage)
+// ----------------------------------------
 builder.Services.AddSingleton(new Cloudinary(new Account(
     builder.Configuration["Cloudinary:CloudName"],
     builder.Configuration["Cloudinary:ApiKey"],
     builder.Configuration["Cloudinary:ApiSecret"]
 )));
 
-
 // ----------------------------------------
-// DATABASE CONFIG
+// DATABASE CONFIG (SQL SERVER ONLY)
 // ----------------------------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddDbContext<AppDbContext>(opts =>
-        opts.UseSqlServer(connectionString));
-}
-else
-{
-    builder.Services.AddDbContext<AppDbContext>(opts =>
-        opts.UseNpgsql(connectionString));
-}
-
-// Required for PostgreSQL datetime compatibility
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-AppContext.SetSwitch("Npgsql.EnableDateTimeInfinityConversions", true);
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(connectionString));
 
 // ----------------------------------------
 // Identity Configuration
@@ -66,19 +58,18 @@ builder.Services.AddIdentity<AdminUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
-    options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 4;
     options.Password.RequiredUniqueChars = 1;
 
     options.User.RequireUniqueEmail = true;
-
 })
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
 // ----------------------------------------
-// Cookies
+// Cookie Settings
 // ----------------------------------------
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -92,7 +83,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 var app = builder.Build();
 
 // ----------------------------------------
-// Pipeline
+// HTTP PIPELINE
 // ----------------------------------------
 if (!app.Environment.IsDevelopment())
 {
@@ -112,7 +103,7 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 // ----------------------------------------
-// DATABASE INIT (Only Admin User)
+// DATABASE INIT + ADMIN USER
 // ----------------------------------------
 using (var scope = app.Services.CreateScope())
 {
@@ -124,55 +115,53 @@ using (var scope = app.Services.CreateScope())
         var userManager = services.GetRequiredService<UserManager<AdminUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-        Console.WriteLine("🚀 DB Initialization starting...");
+        Console.WriteLine("🚀 Database initialization starting...");
 
         if (await context.Database.CanConnectAsync())
         {
             await context.Database.EnsureCreatedAsync();
         }
 
-        // Only ensure Admin user exists
         await EnsureAdminUserAlwaysExists(userManager, roleManager);
 
-        Console.WriteLine("🎉 DB Initialization complete");
+        Console.WriteLine("🎉 Database initialization complete");
     }
     catch (Exception ex)
     {
-        Console.WriteLine("🔥 DB Error: " + ex.Message);
+        Console.WriteLine("🔥 Database error: " + ex.Message);
     }
 }
 
 app.Run();
 
 // ----------------------------------------
-// KEEP ONLY THIS — Admin creation
+// ADMIN CREATION (ONLY THIS SEED)
 // ----------------------------------------
 async Task EnsureAdminUserAlwaysExists(
     UserManager<AdminUser> userManager,
     RoleManager<IdentityRole> roleManager)
 {
-    string adminEmail = "kvuser@korlavalasa.com";
     string adminUsername = "kvuser";
+    string adminEmail = "kvuser@korlavalasa.com";
     string adminPassword = "kvalasa@123";
 
-    // Ensure Admin role exists
+    // Ensure role exists
     if (!await roleManager.RoleExistsAsync("Admin"))
     {
         await roleManager.CreateAsync(new IdentityRole("Admin"));
         Console.WriteLine("✔ Admin role created");
     }
 
-    // Delete old admin user (optional)
+    // Remove old admin (if exists)
     var oldAdmin = await userManager.FindByNameAsync("admin");
     if (oldAdmin != null)
     {
         await userManager.DeleteAsync(oldAdmin);
-        Console.WriteLine("✔ Old admin user removed");
+        Console.WriteLine("✔ Old admin removed");
     }
 
-    // Check if new user exists
-    var admin = await userManager.FindByEmailAsync(adminEmail);
-
+    // Create new admin
+    var admin = await userManager.FindByNameAsync(adminUsername);
     if (admin == null)
     {
         admin = new AdminUser
@@ -184,7 +173,6 @@ async Task EnsureAdminUserAlwaysExists(
         };
 
         var result = await userManager.CreateAsync(admin, adminPassword);
-
         if (result.Succeeded)
         {
             await userManager.AddToRoleAsync(admin, "Admin");
@@ -192,13 +180,12 @@ async Task EnsureAdminUserAlwaysExists(
         }
         else
         {
-            Console.WriteLine("❌ Failed to create new admin: " +
+            Console.WriteLine("❌ Admin creation failed: " +
                 string.Join(", ", result.Errors.Select(e => e.Description)));
         }
     }
     else
     {
-        Console.WriteLine("✔ Admin user already exists: kvuser");
+        Console.WriteLine("✔ Admin user already exists");
     }
 }
-
