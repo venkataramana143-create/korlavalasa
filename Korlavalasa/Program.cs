@@ -18,7 +18,7 @@ builder.Services.AddRazorPages();
 // --------------------------------------------------
 builder.Services.Configure<IISServerOptions>(options =>
 {
-    options.MaxRequestBodySize = 50 * 1024 * 1024;
+    options.MaxRequestBodySize = 50 * 1024 * 1024; // 50 MB
 });
 
 builder.Services.Configure<KestrelServerOptions>(options =>
@@ -34,15 +34,22 @@ builder.Services.Configure<FormOptions>(options =>
     options.MemoryBufferThreshold = int.MaxValue;
 });
 
+<<<<<<< HEAD
 // --------------------------------------------------
 // Cloudinary (Image Storage)
 // --------------------------------------------------
+=======
+// ----------------------------------------
+// Cloudinary (Image Storage)
+// ----------------------------------------
+>>>>>>> 6231d1098f128fd09e9a4fec32884a8e3938ec7d
 builder.Services.AddSingleton(new Cloudinary(new Account(
     builder.Configuration["Cloudinary:CloudName"],
     builder.Configuration["Cloudinary:ApiKey"],
     builder.Configuration["Cloudinary:ApiSecret"]
 )));
 
+<<<<<<< HEAD
 // --------------------------------------------------
 // DATABASE CONFIG (SUPABASE POSTGRESQL)
 // --------------------------------------------------
@@ -53,6 +60,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 );
 
 // --------------------------------------------------
+=======
+// ----------------------------------------
+// DATABASE CONFIG (SQL SERVER ONLY)
+// ----------------------------------------
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+// ----------------------------------------
+>>>>>>> 6231d1098f128fd09e9a4fec32884a8e3938ec7d
 // Identity Configuration
 // --------------------------------------------------
 builder.Services.AddIdentity<AdminUser, IdentityRole>(options =>
@@ -61,7 +79,11 @@ builder.Services.AddIdentity<AdminUser, IdentityRole>(options =>
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = false;
     options.Password.RequireNonAlphanumeric = false;
+<<<<<<< HEAD
     options.Password.RequiredLength = 6;
+=======
+    options.Password.RequiredLength = 4;
+>>>>>>> 6231d1098f128fd09e9a4fec32884a8e3938ec7d
     options.Password.RequiredUniqueChars = 1;
 
     options.User.RequireUniqueEmail = true;
@@ -69,9 +91,15 @@ builder.Services.AddIdentity<AdminUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
+<<<<<<< HEAD
 // --------------------------------------------------
 // Cookie Settings
 // --------------------------------------------------
+=======
+// ----------------------------------------
+// Cookie Settings
+// ----------------------------------------
+>>>>>>> 6231d1098f128fd09e9a4fec32884a8e3938ec7d
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
@@ -83,9 +111,15 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 var app = builder.Build();
 
+<<<<<<< HEAD
 // --------------------------------------------------
 // HTTP PIPELINE
 // --------------------------------------------------
+=======
+// ----------------------------------------
+// HTTP PIPELINE
+// ----------------------------------------
+>>>>>>> 6231d1098f128fd09e9a4fec32884a8e3938ec7d
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -103,9 +137,15 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapRazorPages();
 
+<<<<<<< HEAD
 // --------------------------------------------------
 // DATABASE INIT + ADMIN USER
 // --------------------------------------------------
+=======
+// ----------------------------------------
+// DATABASE INIT + ADMIN USER
+// ----------------------------------------
+>>>>>>> 6231d1098f128fd09e9a4fec32884a8e3938ec7d
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -118,7 +158,15 @@ using (var scope = app.Services.CreateScope())
 
         Console.WriteLine("🚀 Database initialization starting...");
 
+<<<<<<< HEAD
         await context.Database.EnsureCreatedAsync();
+=======
+        if (await context.Database.CanConnectAsync())
+        {
+            await context.Database.EnsureCreatedAsync();
+        }
+
+>>>>>>> 6231d1098f128fd09e9a4fec32884a8e3938ec7d
         await EnsureAdminUserAlwaysExists(userManager, roleManager);
 
         Console.WriteLine("🎉 Database initialization complete");
@@ -131,9 +179,15 @@ using (var scope = app.Services.CreateScope())
 
 app.Run();
 
+<<<<<<< HEAD
 // --------------------------------------------------
 // ADMIN CREATION (ONLY THIS SEED)
 // --------------------------------------------------
+=======
+// ----------------------------------------
+// ADMIN CREATION (ONLY THIS SEED)
+// ----------------------------------------
+>>>>>>> 6231d1098f128fd09e9a4fec32884a8e3938ec7d
 async Task EnsureAdminUserAlwaysExists(
     UserManager<AdminUser> userManager,
     RoleManager<IdentityRole> roleManager)
